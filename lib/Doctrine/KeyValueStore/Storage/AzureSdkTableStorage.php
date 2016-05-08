@@ -148,19 +148,21 @@ class AzureSdkTableStorage implements Storage, RangeQueryStorage
             }
         }
 
-        return $this->getProperties($result->getEntity());
+        return $this->getProperties($result->getEntity(), $key);
     }
 
-    private function getProperties(Entity $entity)
+    private function getProperties(Entity $entity, $key)
     {
         $properties = [];
 
         foreach ($entity->getProperties() as $name => $property) {
-            if ($name === 'PartitionKey') {
-                $name = 'dist';
-            } elseif ($name === 'RowKey') {
-                $name = 'range';
-            }
+			if ($name === 'PartitionKey') {
+				$name = array_keys($key)[0];
+				$properties['dist'] = $property->getValue();
+			} else if ($name === 'RowKey') {
+				$name = array_keys($key)[1];
+				$properties['range'] = $property->getValue();
+			}
 
             $properties[$name] = $property->getValue();
         }
